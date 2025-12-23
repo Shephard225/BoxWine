@@ -87,8 +87,6 @@ curl -s -o ~/x https://raw.githubusercontent.com/Shephard225/BoxWine/main/instal
 boxwine
 ```
 
-(or `mobox`, depending on your setup)
-
 ---
 
 ## ⚙️ Configuration
