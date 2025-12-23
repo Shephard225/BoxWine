@@ -136,7 +136,7 @@ To uninstall BoxWine, use the **Backup and Restore** menu.
 
 ## ⚠️ Disclaimer
 
-BoxWine is an **unofficial** project.  
+BoxWine is an **official** project.  
 It is **not affiliated** with WineHQ, Box64, Box86, or Termux developers.
 
 Use at your own risk.
