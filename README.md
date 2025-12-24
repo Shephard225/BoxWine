@@ -171,7 +171,7 @@ Feedback, testing, and contributions are welcome.
 
 [Termux-app](https://github.com/termux/termux-app)
 
-[Termux-x11](https://github.com/termux/termux-x11)
+[Termux-X11](https://github.com/termux/termux-x11)
 
 [Wine](https://wiki.winehq.org/Licensing)
 
