@@ -78,7 +78,9 @@ Low-end devices may experience crashes or very poor performance.
 ### 2. Open Termux and run:
 
 ```bash
-curl -s -o ~/x https://raw.githubusercontent.com/Shephard225/BoxWine/main/install && . ~/x
+curl -fsSL https://raw.githubusercontent.com/Shephard225/BoxWine/main/installation.sh -o ~/boxwine-install.sh || exit 1
+chmod +x ~/boxwine-install.sh
+bash ~/boxwine-install.sh
 ```
 
 ### 3. Start BoxWine
