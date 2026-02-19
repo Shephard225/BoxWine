@@ -8,16 +8,24 @@ title() {
 }
 
 step() {
-    printf "\n\033[1;34m%s\033[0m\n" "$1"
+    printf "\n\033[1;34m▶ %s\033[0m\n" "$1"
 }
 
 ok() {
-    printf "\033[1;32m%s\033[0m\n" "$1"
+    printf "\033[1;32m✔ %s\033[0m\n" "$1"
 }
 
 fail() {
-    printf "\033[1;31m%s\033[0m\n" "$1"
+    printf "\033[1;31m✖ %s\033[0m\n" "$1"
     exit 1
+}
+
+progress_bar() {
+    for i in {1..30}; do
+        printf "\033[1;36m#\033[0m"
+        sleep 0.02
+    done
+    echo
 }
 
 title
@@ -25,18 +33,28 @@ title
 step "Requesting storage permission..."
 termux-setup-storage
 sleep 2
-
 [ ! -d "$HOME/storage/shared" ] && fail "Storage permission not granted."
+ok "Storage access granted."
+
+step "Checking Termux mirrors..."
+progress_bar
+pkg update -y >/dev/null 2>&1 || fail "Mirror check failed."
+ok "Mirrors reachable."
 
 step "Cleaning and updating system..."
+progress_bar
 apt-get clean
 pkg update -y
 pkg upgrade -y
+ok "System updated."
 
 step "Installing repositories..."
+progress_bar
 pkg install -y root-repo x11-repo tur-repo
+ok "Repositories installed."
 
 step "Installing base system packages..."
+progress_bar
 pkg install -y \
 wget curl git tar xz unzip p7zip \
 proot tsu termux-am \
@@ -46,11 +64,15 @@ htop nano \
 clang make cmake binutils \
 android-tools \
 python python-tkinter
+ok "Base system ready."
 
 step "Installing audio stack..."
+progress_bar
 pkg install -y pulseaudio alsa-utils
+ok "Audio stack installed."
 
 step "Installing full graphics stack..."
+progress_bar
 pkg install -y \
 mesa mesa-zink \
 mesa-vulkan-icd-freedreno \
@@ -60,12 +82,22 @@ libdrm \
 xwayland \
 xorg-xrandr xorg-xhost xorg-xsetroot \
 termux-x11-nightly
+ok "Graphics stack installed."
 
 step "Installing additional utilities..."
+progress_bar
 pkg install -y firefox mpv vlc vlc-qt gimp abiword
+ok "Utilities installed."
 
-ok "All packages installed successfully."
+sleep 2
+clear
+title
+printf "\n\033[1;35mStage 1 Completed Successfully\033[0m\n"
+sleep 2
+clear
 
+title
+printf "\n\033[1;36mProceeding to Runtime Installation...\033[0m\n"
 sleep 2
 clear
 title
@@ -109,8 +141,13 @@ else
     fail "Invalid selection."
 fi
 
+URL="$REPO/$FILE"
+
 step "Downloading $RUNTIME..."
-wget --show-progress "$REPO/$FILE" || fail "Download failed."
+echo "Source: $URL"
+echo
+
+wget -L --show-progress "$URL" || fail "Download failed."
 
 [ ! -f "$FILE" ] && fail "Runtime archive not found."
 
@@ -118,7 +155,7 @@ step "Extracting runtime..."
 tar -xJf "$FILE" || fail "Extraction failed."
 rm -f "$FILE"
 
-[ ! -f "$INSTALL_DIR/boxwine" ] && fail "Executable 'boxwine' not found in archive."
+[ ! -f "$INSTALL_DIR/boxwine" ] && fail "Executable 'boxwine' not found."
 
 chmod +x "$INSTALL_DIR/boxwine"
 
@@ -132,11 +169,11 @@ chmod +x "$PREFIX/bin/boxwine"
 
 clear
 title
-
 ok "Installation completed successfully."
 
 echo
 echo "To launch emulator type:"
 echo
 echo "boxwine"
+echo
 echo
