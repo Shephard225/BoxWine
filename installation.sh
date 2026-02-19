@@ -100,7 +100,7 @@ mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR" || exit 1
 
 if [ "$CHOICE" = "1" ]; then
-    FILE="glibc-boxwine.tar.xz"
+    FILE="rootfs-glibc-boxwine.tar.xz"
     RUNTIME="GLIBC Prefix"
 elif [ "$CHOICE" = "2" ]; then
     FILE="ajay-prefix-boxwine.tar.xz"
