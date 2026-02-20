@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-set -e
+set -euo pipefail
 
 PREFIX="/data/data/com.termux/files/usr"
 PATH="$PREFIX/bin:$PATH"
@@ -7,155 +7,93 @@ ROOT="$PREFIX/glibc"
 BIN="$PREFIX/bin/boxwine"
 WORK="$HOME/.boxwine"
 TMP="$WORK/tmp"
+LOG="$WORK/install.log"
 
 mkdir -p "$WORK" "$TMP" "$ROOT"
+exec > >(tee -a "$LOG") 2>&1
 
-clear_screen() { clear; }
-
-banner() {
 clear
-printf "\033[1;36m╔══════════════════════════════════════════════════════════════╗\033[0m\n"
-printf "\033[1;36m║                        BOXWINE ULTRA INSTALLER               ║\033[0m\n"
-printf "\033[1;36m║                Advanced Emulator Environment Setup           ║\033[0m\n"
-printf "\033[1;36m╚══════════════════════════════════════════════════════════════╝\033[0m\n\n"
-}
+printf "\033[1;36m╔══════════════════════════════════════════════════════╗\033[0m\n"
+printf "\033[1;36m║                BOXWINE ULTRA SAFE INSTALLER         ║\033[0m\n"
+printf "\033[1;36m╚══════════════════════════════════════════════════════╝\033[0m\n\n"
 
-line() {
-printf "\033[1;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m\n"
-}
-
-spinner() {
-pid=$!
-spin='-\|/'
-i=0
-while kill -0 $pid 2>/dev/null; do
-i=$(( (i+1) %4 ))
-printf "\r\033[1;33m[%c] Processing...\033[0m" "${spin:$i:1}"
-sleep .1
-done
-printf "\r\033[1;32m✔ Done\033[0m\n"
-}
-
-install_one() {
-NAME="$1"
-shift
-printf "\033[1;33m→ %s\033[0m\n" "$NAME"
-apt install -y "$@" >/dev/null 2>&1 &
-spinner
-}
-
-check_internet() {
-curl -s https://google.com >/dev/null || {
-printf "\033[1;31mNo internet connection\033[0m\n"
-exit 1
-}
-}
-
-check_space() {
-REQ=3500
-FREE=$(df -m "$PREFIX" | tail -1 | awk '{print $4}')
-if [ "$FREE" -lt "$REQ" ]; then
-printf "\033[1;31mNot enough space: %s MB free (need %s MB)\033[0m\n" "$FREE" "$REQ"
-exit 1
-fi
-}
-
-arch_detect() {
-ARCH=$(uname -m)
-printf "\033[1;36mDetected architecture: %s\033[0m\n" "$ARCH"
-sleep 1
-}
-
-download_extract() {
-URL="$1"
-FILE=$(basename "$URL")
-curl -L "$URL" -o "$TMP/$FILE" >/dev/null 2>&1 &
-spinner
-tar -xJf "$TMP/$FILE" -C "$ROOT"
-rm -f "$TMP/$FILE"
-}
-
-create_cmd() {
-cat > "$BIN" <<EOF
-#!/data/data/com.termux/files/usr/bin/bash
-export BOXWINE_ROOT="$ROOT"
-exec "\$BOXWINE_ROOT/bin/boxwine" "\$@"
-EOF
-chmod +x "$BIN"
-}
-
-banner
-line
 printf "\033[1;33mPreparing Termux storage...\033[0m\n"
 termux-setup-storage & sleep 4 >/dev/null 2>&1
 while [ ! -d "$HOME/storage" ]; do sleep 1; done
 
-line
+printf "\033[1;33mChecking internet...\033[0m\n"
+curl -s --head https://github.com >/dev/null || { echo "No internet"; exit 1; }
+
+RAM=$(grep MemTotal /proc/meminfo | awk '{print int($2/1024)}')
+if [ "$RAM" -lt 1800 ]; then
+echo "Minimum 2GB RAM required ($RAM MB detected)"
+exit 1
+fi
+
+FREE=$(df -m "$PREFIX" | tail -1 | awk '{print $4}')
+if [ "$FREE" -lt 3000 ]; then
+echo "Not enough space ($FREE MB free)"
+exit 1
+fi
+
 printf "\033[1;33mUpdating system...\033[0m\n"
-apt update >/dev/null 2>&1 &
-spinner
-apt upgrade -y >/dev/null 2>&1 &
-spinner
+apt update -y >/dev/null 2>&1
+apt upgrade -y >/dev/null 2>&1
 
-check_internet
-check_space
-arch_detect
+install() {
+printf "\033[1;34m→ Installing %s\033[0m\n" "$1"
+apt install -y "$1" >/dev/null 2>&1
+}
 
-line
-printf "\033[1;36mInstalling Core Tools\033[0m\n"
-install_one "wget" wget
-install_one "curl" curl
-install_one "git" git
-install_one "nano" nano
-install_one "htop" htop
-install_one "dialog" dialog
-install_one "tar" tar
-install_one "xz-utils" xz-utils
-install_one "unzip" unzip
-install_one "p7zip" p7zip
-install_one "proot" proot
-install_one "tsu" tsu
-install_one "file" file
-install_one "which" which
+install wget
+install curl
+install git
+install nano
+install htop
+install dialog
+install tar
+install xz-utils
+install unzip
+install p7zip
+install proot
+install tsu
+install file
+install which
+install mesa
+install mesa-zink
+install vulkan-loader
+install vulkan-tools
+install mesa-vulkan-icd-freedreno
+install virglrenderer-android
+install virglrenderer-mesa-zink
+install libdrm
+install termux-x11-nightly
+install xwayland
+install xorg-xhost
+install xorg-xrandr
+install xorg-xsetroot
+install pulseaudio
+install alsa-utils
+install clang
+install make
+install cmake
+install binutils
+install python
+install python-tkinter
+install hashdeep
+install neofetch
 
-line
-printf "\033[1;36mInstalling Graphics Stack\033[0m\n"
-install_one "mesa" mesa
-install_one "mesa-zink" mesa-zink
-install_one "vulkan-loader" vulkan-loader
-install_one "vulkan-tools" vulkan-tools
-install_one "mesa-vulkan-icd-freedreno" mesa-vulkan-icd-freedreno
-install_one "virglrenderer-android" virglrenderer-android
-install_one "virglrenderer-mesa-zink" virglrenderer-mesa-zink
-install_one "libdrm" libdrm
+retry_download() {
+URL="$1"
+OUT="$2"
+for i in 1 2 3; do
+curl -L --fail -o "$OUT" "$URL" && return 0
+sleep 2
+done
+return 1
+}
 
-line
-printf "\033[1;36mInstalling Display System\033[0m\n"
-install_one "termux-x11-nightly" termux-x11-nightly
-install_one "xwayland" xwayland
-install_one "xorg-xhost" xorg-xhost
-install_one "xorg-xrandr" xorg-xrandr
-install_one "xorg-xsetroot" xorg-xsetroot
-
-line
-printf "\033[1;36mInstalling Audio System\033[0m\n"
-install_one "pulseaudio" pulseaudio
-install_one "alsa-utils" alsa-utils
-
-line
-printf "\033[1;36mInstalling Development Tools\033[0m\n"
-install_one "clang" clang
-install_one "make" make
-install_one "cmake" cmake
-install_one "binutils" binutils
-install_one "python" python
-install_one "python-tkinter" python-tkinter
-install_one "hashdeep" hashdeep
-install_one "neofetch" neofetch
-
-clear_screen
-banner
-
+clear
 dialog --menu "Select Prefix Type" 12 60 2 \
 1 "glibc-prefix (recommended)" \
 2 "ajay-prefix" 2> "$TMP/prefix"
@@ -164,37 +102,63 @@ P=$(cat "$TMP/prefix")
 rm -f "$TMP/prefix"
 
 if [ "$P" = "1" ]; then
-printf "\033[1;33mDownloading glibc rootfs...\033[0m\n"
-download_extract "https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-glibc-boxwine.tar.xz"
+ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-glibc-boxwine.tar.xz"
+else
+ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-ajay-boxwine.tar.xz"
+fi
 
-dialog --menu "Select Wine Version" 18 70 4 \
+ROOTFS_FILE="$TMP/rootfs.tar.xz"
+
+printf "\033[1;33mDownloading rootfs...\033[0m\n"
+retry_download "$ROOTFS_URL" "$ROOTFS_FILE" || { echo "Download failed"; exit 1; }
+
+[ -s "$ROOTFS_FILE" ] || exit 1
+xz -t "$ROOTFS_FILE" || { echo "Archive corrupted"; exit 1; }
+
+rm -rf "$ROOT"
+mkdir -p "$ROOT"
+
+tar -xJf "$ROOTFS_FILE" -C "$ROOT" --preserve-permissions --same-owner || { rm -rf "$ROOT"; exit 1; }
+rm -f "$ROOTFS_FILE"
+
+if [ "$P" = "1" ]; then
+dialog --menu "Select Wine Version" 18 70 2 \
 1 "Wine 10.19 Staging amd64 wow64" \
-2 "Wine 10.19 Staging amd64" \
-3 "Wine 10.19 TKG amd64 wow64" \
-4 "Wine 10.19 TKG amd64" 2> "$TMP/wine"
+2 "Wine 10.19 Staging amd64" 2> "$TMP/wine"
 
 W=$(cat "$TMP/wine")
 rm -f "$TMP/wine"
 
-case "$W" in
-1) URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-amd64-wow64.tar.xz" ;;
-2) URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-amd64.tar.xz" ;;
-3) URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-tkg-amd64-wow64.tar.xz" ;;
-4) URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-tkg-amd64.tar.xz" ;;
-esac
-
-printf "\033[1;33mDownloading Wine...\033[0m\n"
-download_extract "$URL"
-
+if [ "$W" = "1" ]; then
+URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-amd64-wow64.tar.xz"
 else
-printf "\033[1;33mDownloading ajay rootfs...\033[0m\n"
-download_extract "https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-ajay-boxwine.tar.xz"
+URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-amd64.tar.xz"
 fi
 
-create_cmd
+WINE_FILE="$TMP/wine.tar.xz"
 
-clear_screen
-printf "\033[1;36m╔════════════════════════════════════════════════╗\033[0m\n"
-printf "\033[1;36m║              BOXWINE INSTALLED SUCCESSFULLY   ║\033[0m\n"
-printf "\033[1;36m╚════════════════════════════════════════════════╝\033[0m\n\n"
-printf "\033[1;33mRun emulator with:\033[0m boxwine\n\n"
+printf "\033[1;33mDownloading Wine...\033[0m\n"
+retry_download "$URL" "$WINE_FILE" || exit 1
+[ -s "$WINE_FILE" ] || exit 1
+xz -t "$WINE_FILE" || exit 1
+
+tar -xJf "$WINE_FILE" -C "$ROOT" --strip-components=1 || { rm -f "$WINE_FILE"; exit 1; }
+rm -f "$WINE_FILE"
+fi
+
+if [ ! -d "$ROOT" ]; then
+echo "Installation failed"
+exit 1
+fi
+
+cat > "$BIN" <<EOF
+#!/data/data/com.termux/files/usr/bin/bash
+export BOXWINE_ROOT="$ROOT"
+exec "\$BOXWINE_ROOT/bin/boxwine" "\$@"
+EOF
+
+chmod +x "$BIN"
+
+clear
+printf "\033[1;32mBOXWINE INSTALLED SUCCESSFULLY\033[0m\n\n"
+printf "\033[1;33mRun with:\033[0m boxwine\n\n"
