@@ -5,10 +5,10 @@
 
 🌐 <b>Language / Язык</b>
 
-<a href="README-en.md">🇺🇸 English</a> |
+<a href="README.md">🇺🇸 English</a> |
 <a href="README-ru.md">🇷🇺 Русский</a> |
-<a href="README-pt-BR.md">🇧🇷 Português (Brasil)</a> |
-<a href="README-zh.md">🇨🇳 中文</a> |
+<a href="README-pt_BR.md">🇧🇷 Português (Brasil)</a> |
+<a href="README-chinese.md">🇨🇳 中文</a> |
 <a href="README-ar.md">🇸🇦 العربية</a> |
 <a href="README-id.md">🇮🇩 Bahasa Indonesia</a> |
 <a href="README-hi.md">🇮🇳 हिन्दी</a>
