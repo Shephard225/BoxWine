@@ -38,7 +38,7 @@ ok "Storage access granted."
 
 step "Checking Termux mirrors..."
 progress_bar
-pkg update -y >/dev/null 2>&1 || fail "Mirror check failed."
+pkg update -y  || fail "Mirror check failed."
 ok "Mirrors reachable."
 
 step "Cleaning and updating system..."
