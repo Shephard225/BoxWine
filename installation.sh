@@ -5,6 +5,10 @@ set -e
 PREFIX="/data/data/com.termux/files/usr"
 PATH="$PREFIX/bin:$PATH"
 
+GITLAB_TOKEN="glpat-32zjNYcypJgZVq_TWbgg6m86MQp1OmtwdHM2Cw.01.1210wi9p8"
+PROJECT_ID="79662501"
+BRANCH="main"
+
 clear
 
 title() {
@@ -31,45 +35,28 @@ GLIBC_DIR="$PREFIX/glibc"
 PKG_MANAGER_DIR="$GLIBC_DIR/opt/package-manager"
 mkdir -p "$PKG_MANAGER_DIR/installed"
 
-echo
-read -p "Enter GitLab Project ID: " PROJECT_ID
-read -p "Enter Branch (main/master): " BRANCH
-read -sp "Enter GitLab Token: " GITLAB_TOKEN
-echo
-
-wget_gitlab_pm() {
-
 FILE_PATH="package-manager"
-ENCODED_PATH=$(echo "$FILE_PATH" | sed 's/\//%2F/g')
-
+ENCODED_PATH=$(echo "$FILE_PATH" | sed 's///%2F/g')
 URL="https://gitlab.com/api/v4/projects/$PROJECT_ID/repository/files/$ENCODED_PATH/raw?ref=$BRANCH"
 
 step "Downloading package-manager..."
 
 HTTP_CODE=$(curl -L \
-  -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-  -w "%{http_code}" \
-  -o "$PKG_MANAGER_DIR/package-manager" \
-  "$URL")
+-H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+-w "%{http_code}" \
+-o "$PKG_MANAGER_DIR/package-manager" \
+"$URL")
 
 if [ "$HTTP_CODE" != "200" ]; then
-    fail "GitLab API error (HTTP $HTTP_CODE)"
+fail "GitLab API error (HTTP $HTTP_CODE)"
 fi
 
 if [ ! -s "$PKG_MANAGER_DIR/package-manager" ]; then
-    fail "Downloaded file is empty"
+fail "Downloaded file is empty"
 fi
 
 chmod +x "$PKG_MANAGER_DIR/package-manager"
 ok "Package-manager downloaded"
-}
-
-if [ -d "$GLIBC_DIR" ]; then
-read -p "Existing glibc detected. Remove it? (y/n): " CONFIRM
-[ "$CONFIRM" = "y" ] && rm -rf "$GLIBC_DIR" || fail "Installation aborted"
-fi
-
-wget_gitlab_pm
 
 step "Executing package-manager..."
 . "$PKG_MANAGER_DIR/package-manager" || fail "Execution failed"
