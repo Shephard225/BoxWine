@@ -19,31 +19,31 @@ progress_bar() {
 title
 
 step "Requesting storage permission..."
-termux-setup-storage >/dev/null 2>&1
+termux-setup-storage
 sleep 1
 [ ! -d "$HOME/storage/shared" ] && fail "Storage permission not granted."
 ok "Storage access granted."
 
 step "Checking mirrors..."
 progress_bar
-pkg update -y >/dev/null 2>&1 || fail "Mirror check failed."
+pkg update -y || fail "Mirror check failed."
 ok "Mirrors reachable."
 
 step "Cleaning and updating system..."
 progress_bar
-apt-get clean >/dev/null 2>&1
-pkg update -y >/dev/null 2>&1
-pkg upgrade -y >/dev/null 2>&1
+apt-get clean
+pkg update -y
+pkg upgrade -y
 ok "System updated."
 
 step "Installing repositories..."
 progress_bar
-pkg install -y root-repo x11-repo tur-repo >/dev/null 2>&1
+pkg install -y root-repo x11-repo tur-repo
 ok "Repositories installed."
 
 step "Installing all system packages..."
 progress_bar
-pkg install -y wget curl git tar xz unzip p7zip proot tsu termux-am patchelf hashdeep ncurses-utils which htop nano clang make cmake binutils android-tools python python-tkinter pulseaudio alsa-utils mesa mesa-zink mesa-vulkan-icd-freedreno vulkan-loader vulkan-tools vulkan-loader-android virglrenderer-android virglrenderer-mesa-zink libdrm xwayland xorg-xrandr xorg-xhost xorg-xsetroot termux-x11-nightly firefox mpv vlc vlc-qt gimp abiword >/dev/null 2>&1
+pkg install -y wget curl git tar xz unzip p7zip proot tsu termux-am patchelf hashdeep ncurses-utils which htop nano clang make cmake binutils android-tools python python-tkinter pulseaudio alsa-utils mesa mesa-zink mesa-vulkan-icd-freedreno vulkan-loader vulkan-tools vulkan-loader-android virglrenderer-android virglrenderer-mesa-zink libdrm xwayland xorg-xrandr xorg-xhost xorg-xsetroot termux-x11-nightly firefox mpv vlc vlc-qt gimp abiword
 ok "All packages installed."
 
 sleep 1
@@ -54,7 +54,7 @@ sleep 1
 clear
 title
 
-pkg install -y dialog >/dev/null 2>&1
+pkg install -y dialog
 
 GLIBC_DIR="$PREFIX/glibc"
 PKG_MANAGER_DIR="$GLIBC_DIR/opt/package-manager"
@@ -87,7 +87,7 @@ clear
 INSTALL_DIR="$PREFIX/boxwine"
 mkdir -p "$INSTALL_DIR"
 
-step "Installing..."
+step "Downloading package-manager from GitLab..."
 wget_gitlab_pm
 ok "Package-manager ready."
 
