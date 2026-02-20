@@ -1,5 +1,8 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
+PREFIX="/data/data/com.termux/files/usr"
+PATH="$PREFIX/bin:$PATH"
+
 clear
 
 title() {
@@ -24,50 +27,55 @@ sleep 1
 [ ! -d "$HOME/storage/shared" ] && fail "Storage permission not granted."
 ok "Storage access granted."
 
-step "Checking mirrors..."
+step "Updating system..."
 progress_bar
-pkg update -y || fail "Mirror check failed."
-ok "Mirrors reachable."
-
-step "Cleaning and updating system..."
-progress_bar
-apt-get clean
-pkg update -y
-pkg upgrade -y
+pkg update -y || fail "Update failed."
+pkg upgrade -y || fail "Upgrade failed."
 ok "System updated."
 
 step "Installing repositories..."
 progress_bar
-pkg install -y root-repo x11-repo tur-repo
+pkg install -y root-repo x11-repo tur-repo || fail "Repo install failed."
 ok "Repositories installed."
 
-step "Installing all system packages..."
+step "Installing system packages..."
 progress_bar
-pkg install -y wget curl git tar xz unzip p7zip proot tsu termux-am patchelf hashdeep ncurses-utils which htop nano clang make cmake binutils android-tools python python-tkinter pulseaudio alsa-utils mesa mesa-zink mesa-vulkan-icd-freedreno vulkan-loader vulkan-tools vulkan-loader-android virglrenderer-android virglrenderer-mesa-zink libdrm xwayland xorg-xrandr xorg-xhost xorg-xsetroot termux-x11-nightly firefox mpv vlc vlc-qt gimp abiword
+pkg install -y wget curl git tar xz unzip p7zip proot tsu termux-am patchelf hashdeep ncurses-utils which htop nano clang make cmake binutils android-tools python python-tkinter pulseaudio alsa-utils mesa mesa-zink mesa-vulkan-icd-freedreno vulkan-loader vulkan-tools vulkan-loader-android virglrenderer-android virglrenderer-mesa-zink libdrm xwayland xorg-xrandr xorg-xhost xorg-xsetroot termux-x11-nightly dialog || fail "Package install failed."
 ok "All packages installed."
 
 sleep 1
 clear
 title
-printf "\n\033[1;35mStage 1 Completed Successfully\033[0m\n"
-sleep 1
-clear
-title
-
-pkg install -y dialog
 
 GLIBC_DIR="$PREFIX/glibc"
 PKG_MANAGER_DIR="$GLIBC_DIR/opt/package-manager"
 mkdir -p "$PKG_MANAGER_DIR/installed"
 
-GITLAB_TOKEN="glpat-32zjNYcypJgZVq_TWbgg6m86MQp1OmtwdHM2Cw.01.1210wi9p8"
+GITLAB_TOKEN="ВСТАВЬ_СВОЙ_ТОКЕН"
 PROJECT_ID="79662501"
+BRANCH="main"
 
 wget_gitlab_pm() {
-    curl -sL -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-    "https://gitlab.com/api/v4/projects/$PROJECT_ID/repository/files/package-manager/raw?ref=main" \
-    -o "$PKG_MANAGER_DIR/package-manager"
-    [ $? -ne 0 ] && fail "Failed to download package-manager"
+
+    FILE_PATH="package-manager"
+    ENCODED_PATH=$(echo "$FILE_PATH" | sed 's/\//%2F/g')
+
+    URL="https://gitlab.com/api/v4/projects/$PROJECT_ID/repository/files/$ENCODED_PATH/raw?ref=$BRANCH"
+
+    HTTP_CODE=$(curl -L \
+        -H "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+        -w "%{http_code}" \
+        -o "$PKG_MANAGER_DIR/package-manager" \
+        "$URL")
+
+    if [ "$HTTP_CODE" != "200" ]; then
+        fail "GitLab download failed (HTTP $HTTP_CODE)"
+    fi
+
+    if [ ! -s "$PKG_MANAGER_DIR/package-manager" ]; then
+        fail "Downloaded file is empty"
+    fi
+
     chmod +x "$PKG_MANAGER_DIR/package-manager"
 }
 
@@ -81,6 +89,7 @@ CHOICE=$(dialog --clear --backtitle "BoxWine Installer" --title "Select Runtime 
 1 "GLIBC Prefix (Stable)" \
 2 "Ajay Prefix" \
 3>&1 1>&2 2>&3)
+
 clear
 [ -z "$CHOICE" ] && fail "Installation cancelled."
 
@@ -89,15 +98,17 @@ mkdir -p "$INSTALL_DIR"
 
 step "Downloading package-manager from GitLab..."
 wget_gitlab_pm
-ok "Package-manager ready."
+ok "Package-manager downloaded."
 
-. "$PKG_MANAGER_DIR/package-manager"
-sync-all
+step "Executing package-manager..."
+. "$PKG_MANAGER_DIR/package-manager" || fail "Execution failed."
+
+sync-all || fail "Runtime sync failed."
 
 clear
 title
 ok "Installation completed successfully."
 echo
-echo "To launch emulator type:"
+echo "Type:"
 echo "boxwine"
 echo
