@@ -52,11 +52,11 @@ file "$OUT" | grep -qi "xz" || fail "Downloaded file is not xz archive"
 title
 
 warn "Preparing storage..."
-termux-setup-storage || true
+termux-setup-storage > /dev/null 2>&1 || true
 ok "Storage ready"
 
 warn "Checking internet..."
-curl -I https://github.com
+curl -Is https://github.com | head -n 1 > /dev/null
 ok "Internet OK"
 
 warn "Checking RAM..."
@@ -71,16 +71,41 @@ ok "Free space: ${FREE}MB"
 
 line
 
-warn "Updating Termux..."
-pkg update
-pkg upgrade -y
+export DEBIAN_FRONTEND=noninteractive
+
+warn "Updating system..."
+pkg update -y > /dev/null 2>&1
+pkg upgrade -y > /dev/null 2>&1
 ok "System updated"
 
 line
 
-warn "Installing required packages..."
-pkg install -y curl wget tar dialog xz-utils unzip proot file
-ok "Packages installed"
+warn "Installing base tools..."
+pkg install -y \
+curl wget tar dialog xz-utils unzip proot file \
+> /dev/null 2>&1
+ok "Base tools installed"
+
+warn "Installing graphics stack..."
+pkg install -y \
+mesa vulkan-loader \
+libx11 libxext libxrender libxrandr libxfixes \
+libxi libxcursor libxinerama \
+fontconfig freetype \
+> /dev/null 2>&1
+ok "Graphics stack installed"
+
+warn "Installing audio stack..."
+pkg install -y \
+pulseaudio alsa-lib \
+> /dev/null 2>&1
+ok "Audio stack installed"
+
+warn "Installing additional utilities..."
+pkg install -y \
+glibc-repo ncurses git \
+> /dev/null 2>&1
+ok "Additional utilities installed"
 
 line
 
@@ -138,12 +163,11 @@ ok "Wine installed"
 
 fi
 
-
 warn "Creating launcher..."
 cat > "$BIN" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
 ROOT="/data/data/com.termux/files/usr/glibc"
-exec box64 "$ROOT/bin/wine" "$@"
+exec "$ROOT/bin/wine" "$@"
 EOF
 
 chmod +x "$BIN"
