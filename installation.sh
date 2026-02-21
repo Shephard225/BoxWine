@@ -78,7 +78,7 @@ pkg install -y \
 bash bash-completion which file sed grep gawk coreutils findutils diffutils \
 util-linux procps less tree htop nano vim tmux \
 curl wget aria2 git openssh rsync \
-zip unzip p7zip tar gzip bzip2 xz \
+zip unzip p7zip tar gzip bzip2 xz-utils \
 patch ed bc jq
 ok "Core tools installed"
 
@@ -165,32 +165,3 @@ rm -f "$TMP/wine"
 if [ "$W" = "1" ]; then
 URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.20-staging-amd64-wow64.tar.xz"
 else
-URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.20-staging-amd64.tar.xz"
-fi
-
-title
-warn "Downloading Wine..."
-WINE_FILE="$TMP/wine.tar.xz"
-download_xz "$URL" "$WINE_FILE"
-ok "Wine downloaded"
-
-warn "Installing Wine..."
-tar -xJf "$WINE_FILE" -C "$ROOT" --strip-components=1
-rm -f "$WINE_FILE"
-ok "Wine installed"
-
-fi
-
-warn "Creating launcher..."
-cat > "$BIN" << 'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-ROOT="/data/data/com.termux/files/usr/glibc"
-exec "$ROOT/bin/wine" "$@"
-EOF
-
-chmod +x "$BIN"
-ok "Launcher created"
-
-line
-printf "\033[1;32mBOXWINE INSTALLED SUCCESSFULLY\033[0m\n\n"
-printf "\033[1;33mRun with:\033[0m boxwine\n\n"
