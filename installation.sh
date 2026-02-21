@@ -36,9 +36,18 @@ curl -L --fail --progress-bar -o "$2" "$1"
 title
 export DEBIAN_FRONTEND=noninteractive
 
-warn "Preparing storage..."
-termux-setup-storage || true
-ok "Storage ready"
+warn "Installing termux-am..."
+pkg install -y termux-am > /dev/null 2>&1
+ok "termux-am installed"
+
+warn "Requesting storage permission..."
+termux-setup-storage > /dev/null 2>&1
+sleep 4
+while [ ! -d "$HOME/storage/shared" ]; do
+warn "Waiting for storage permission..."
+sleep 3
+done
+ok "Storage permission granted"
 
 warn "Checking RAM..."
 RAM=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
@@ -53,58 +62,58 @@ ok "Free space: ${FREE}MB"
 line
 
 warn "Updating repositories..."
-pkg update -y
-ok "Repositories updated"
-
-warn "Upgrading system..."
-pkg upgrade -y
-ok "System upgraded"
+apt-get clean
+apt-get update -y
+apt-get -y --with-new-pkgs -o Dpkg::Options::="--force-confdef" upgrade
+ok "System updated"
 
 line
 
-warn "Installing base tools..."
+warn "Installing repositories..."
+pkg install -y x11-repo root-repo glibc-repo > /dev/null 2>&1
+ok "Repositories installed"
+
+warn "Installing core tools..."
 pkg install -y \
-curl wget tar dialog xz-utils unzip proot file which sed grep coreutils \
-findutils diffutils gawk bash-completion util-linux
-ok "Base tools installed"
+bash bash-completion which file sed grep gawk coreutils findutils diffutils \
+util-linux procps less tree htop nano vim tmux \
+curl wget aria2 git openssh rsync \
+zip unzip p7zip tar gzip bzip2 xz \
+patch ed bc jq \
+> /dev/null 2>&1
+ok "Core tools installed"
 
 warn "Installing development stack..."
 pkg install -y \
-git clang make cmake ninja pkg-config \
-binutils patchelf autoconf automake libtool
+clang make cmake ninja pkg-config \
+binutils lld \
+autoconf automake libtool m4 \
+patchelf \
+gdb strace ltrace \
+> /dev/null 2>&1
 ok "Development stack installed"
 
-warn "Installing graphics stack..."
+warn "Installing libraries..."
 pkg install -y \
-mesa mesa-demos vulkan-loader vulkan-tools \
-libx11 libxext libxrender libxrandr libxfixes \
-libxi libxcursor libxinerama libxxf86vm \
-libxkbcommon libxdamage libxcomposite \
-fontconfig freetype harfbuzz
-ok "Graphics stack installed"
+openssl ca-certificates libcurl nghttp2 \
+zlib libbz2 liblzma \
+libpng libjpeg-turbo libtiff libwebp \
+sqlite libffi libxml2 libxslt \
+readline ncurses ncurses-utils \
+> /dev/null 2>&1
+ok "Libraries installed"
 
 warn "Installing audio stack..."
 pkg install -y \
-pulseaudio alsa-lib alsa-utils openal-soft
+pulseaudio alsa-lib alsa-utils openal-soft \
+> /dev/null 2>&1
 ok "Audio stack installed"
-
-warn "Installing network stack..."
-pkg install -y \
-openssl ca-certificates libcurl nghttp2
-ok "Network stack installed"
-
-warn "Installing compatibility libraries..."
-pkg install -y \
-glibc-repo glibc-runner \
-ncurses libandroid-glob \
-zlib bzip2 xz \
-libpng libjpeg-turbo \
-libtiff libwebp
-ok "Compatibility libraries installed"
 
 warn "Installing extra utilities..."
 pkg install -y \
-htop nano vim tmux zip p7zip
+hashdeep tsu \
+dos2unix inetutils net-tools \
+> /dev/null 2>&1
 ok "Extra utilities installed"
 
 line
@@ -115,9 +124,9 @@ title
 
 warn "Checking glibc environment..."
 if [ -d "$ROOT" ]; then
-ok "glibc directory already exists"
+ok "glibc directory detected"
 else
-warn "glibc not installed yet"
+warn "glibc not installed"
 fi
 
 sleep 2
