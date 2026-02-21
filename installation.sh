@@ -9,7 +9,6 @@ LOG="$WORK/install.log"
 BIN="$PREFIX/bin/boxwine"
 
 mkdir -p "$WORK" "$TMP"
-
 exec > >(tee -a "$LOG") 2>&1
 
 line() { printf "\033[1;36m══════════════════════════════════════════════════════\033[0m\n"; }
@@ -23,6 +22,19 @@ printf "\n"
 ok() { printf "\033[1;32m✔ %s\033[0m\n" "$1"; }
 warn() { printf "\033[1;33m➜ %s\033[0m\n" "$1"; }
 fail() { printf "\033[1;31m✖ %s\033[0m\n" "$1"; exit 1; }
+
+download_safe() {
+URL="$1"
+OUT="$2"
+for i in 1 2 3; do
+  curl -L --fail -A "Mozilla/5.0" --progress-bar -o "$OUT" "$URL" && break
+  sleep 2
+done
+[ -f "$OUT" ] || fail "Download failed"
+SIZE=$(stat -c%s "$OUT")
+[ "$SIZE" -lt 10000000 ] && fail "Downloaded file too small"
+file "$OUT" | grep -qi "xz" || fail "Downloaded file is not xz archive"
+}
 
 title
 
@@ -46,7 +58,7 @@ ok "Free space: ${FREE}MB"
 
 line
 
-warn "Updating Termux (this may take time)..."
+warn "Updating Termux..."
 pkg update
 pkg upgrade -y
 ok "System updated"
@@ -54,7 +66,7 @@ ok "System updated"
 line
 
 warn "Installing required packages..."
-pkg install -y curl wget tar dialog xz-utils unzip proot
+pkg install -y curl wget tar dialog xz-utils unzip proot file
 ok "Packages installed"
 
 line
@@ -67,16 +79,15 @@ P=$(cat "$TMP/prefix")
 rm -f "$TMP/prefix"
 
 if [ "$P" = "1" ]; then
-  ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-glibc-boxwine.tar.xz"
+ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-glibc-boxwine.tar.xz"
 else
-  ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-ajay-boxwine.tar.xz"
+ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-ajay-boxwine.tar.xz"
 fi
 
 title
 warn "Downloading rootfs..."
 ROOTFS_FILE="$TMP/rootfs.tar.xz"
-curl -L --progress-bar -o "$ROOTFS_FILE" "$ROOTFS_URL"
-xz -t "$ROOTFS_FILE" || fail "Archive corrupted"
+download_safe "$ROOTFS_URL" "$ROOTFS_FILE"
 ok "Rootfs downloaded"
 
 warn "Installing rootfs..."
@@ -104,8 +115,8 @@ fi
 title
 warn "Downloading Wine..."
 WINE_FILE="$TMP/wine.tar.xz"
-curl -L --progress-bar -o "$WINE_FILE" "$URL"
-xz -t "$WINE_FILE" || fail "Wine archive corrupted"
+download_safe "$URL" "$WINE_FILE"
+ok "Wine downloaded"
 
 warn "Installing Wine..."
 tar -xJf "$WINE_FILE" -C "$ROOT" --strip-components=1
