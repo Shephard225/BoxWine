@@ -191,13 +191,14 @@ Feedback, testing, and contributions are welcome.
 
 [Termux-X11](https://github.com/termux/termux-x11)
 
-[Wine](https://wiki.winehq.org/Licensing)
+[Wine](https://github.com/Kron4ek/Wine-builds)
 
-[wine-ge-custom](https://github.com/GloriousEggroll/wine-ge-custom)
+[Turnip-driver](https://github.com/K11MCH1/AdrenoToolsDriver)
 
 [Mesa](https://docs.mesa3d.org/license.html)
 
-[mesa-zink-11.06.22](https://github.com/alexvorxx/mesa-zink-11.06.22)
 
-[Mesa-VirGL](https://github.com/alexvorxx/Mesa-VirGL)
+
+
+
 
