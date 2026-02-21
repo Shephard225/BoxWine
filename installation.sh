@@ -37,11 +37,11 @@ title
 export DEBIAN_FRONTEND=noninteractive
 
 warn "Installing termux-am..."
-pkg install -y termux-am > /dev/null 2>&1
+pkg install -y termux-am
 ok "termux-am installed"
 
 warn "Requesting storage permission..."
-termux-setup-storage > /dev/null 2>&1
+termux-setup-storage
 sleep 4
 while [ ! -d "$HOME/storage/shared" ]; do
 warn "Waiting for storage permission..."
@@ -70,7 +70,7 @@ ok "System updated"
 line
 
 warn "Installing repositories..."
-pkg install -y x11-repo root-repo glibc-repo > /dev/null 2>&1
+pkg install -y x11-repo root-repo glibc-repo
 ok "Repositories installed"
 
 warn "Installing core tools..."
@@ -79,8 +79,7 @@ bash bash-completion which file sed grep gawk coreutils findutils diffutils \
 util-linux procps less tree htop nano vim tmux \
 curl wget aria2 git openssh rsync \
 zip unzip p7zip tar gzip bzip2 xz \
-patch ed bc jq \
-> /dev/null 2>&1
+patch ed bc jq
 ok "Core tools installed"
 
 warn "Installing development stack..."
@@ -89,8 +88,7 @@ clang make cmake ninja pkg-config \
 binutils lld \
 autoconf automake libtool m4 \
 patchelf \
-gdb strace ltrace \
-> /dev/null 2>&1
+gdb strace ltrace
 ok "Development stack installed"
 
 warn "Installing libraries..."
@@ -99,21 +97,18 @@ openssl ca-certificates libcurl nghttp2 \
 zlib libbz2 liblzma \
 libpng libjpeg-turbo libtiff libwebp \
 sqlite libffi libxml2 libxslt \
-readline ncurses ncurses-utils \
-> /dev/null 2>&1
+readline ncurses ncurses-utils
 ok "Libraries installed"
 
 warn "Installing audio stack..."
 pkg install -y \
-pulseaudio alsa-lib alsa-utils openal-soft \
-> /dev/null 2>&1
+pulseaudio alsa-lib alsa-utils openal-soft
 ok "Audio stack installed"
 
 warn "Installing extra utilities..."
 pkg install -y \
 hashdeep tsu \
-dos2unix inetutils net-tools \
-> /dev/null 2>&1
+dos2unix inetutils net-tools
 ok "Extra utilities installed"
 
 line
