@@ -37,7 +37,7 @@ title
 export DEBIAN_FRONTEND=noninteractive
 
 warn "Preparing storage..."
-termux-setup-storage > /dev/null 2>&1 || true
+termux-setup-storage || true
 ok "Storage ready"
 
 warn "Checking RAM..."
@@ -63,29 +63,64 @@ ok "System upgraded"
 line
 
 warn "Installing base tools..."
-pkg install -y curl wget tar dialog xz-utils unzip proot file \
-> /dev/null 2>&1
+pkg install -y \
+curl wget tar dialog xz-utils unzip proot file which sed grep coreutils \
+findutils diffutils gawk bash-completion util-linux
 ok "Base tools installed"
+
+warn "Installing development stack..."
+pkg install -y \
+git clang make cmake ninja pkg-config \
+binutils patchelf autoconf automake libtool
+ok "Development stack installed"
 
 warn "Installing graphics stack..."
 pkg install -y \
-mesa vulkan-loader \
+mesa mesa-demos vulkan-loader vulkan-tools \
 libx11 libxext libxrender libxrandr libxfixes \
-libxi libxcursor libxinerama \
-fontconfig freetype \
-> /dev/null 2>&1
+libxi libxcursor libxinerama libxxf86vm \
+libxkbcommon libxdamage libxcomposite \
+fontconfig freetype harfbuzz
 ok "Graphics stack installed"
 
 warn "Installing audio stack..."
-pkg install -y pulseaudio alsa-lib \
-> /dev/null 2>&1
+pkg install -y \
+pulseaudio alsa-lib alsa-utils openal-soft
 ok "Audio stack installed"
 
-warn "Installing additional utilities..."
-pkg install -y glibc-repo ncurses git \
-> /dev/null 2>&1
-ok "Additional utilities installed"
+warn "Installing network stack..."
+pkg install -y \
+openssl ca-certificates libcurl nghttp2
+ok "Network stack installed"
 
+warn "Installing compatibility libraries..."
+pkg install -y \
+glibc-repo glibc-runner \
+ncurses libandroid-glob \
+zlib bzip2 xz \
+libpng libjpeg-turbo \
+libtiff libwebp
+ok "Compatibility libraries installed"
+
+warn "Installing extra utilities..."
+pkg install -y \
+htop nano vim tmux zip p7zip
+ok "Extra utilities installed"
+
+line
+
+sleep 2
+clear
+title
+
+warn "Checking glibc environment..."
+if [ -d "$ROOT" ]; then
+ok "glibc directory already exists"
+else
+warn "glibc not installed yet"
+fi
+
+sleep 2
 line
 
 dialog --clear --menu "Select Prefix Type" 12 60 2 \
