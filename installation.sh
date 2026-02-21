@@ -79,7 +79,7 @@ ok "System updated"
 line
 
 warn "Installing required packages..."
-pkg install -y curl wget tar dialog xz-utils unzip proot file box64
+pkg install -y curl wget tar dialog xz-utils unzip proot file
 ok "Packages installed"
 
 line
