@@ -5,11 +5,9 @@ PREFIX="/data/data/com.termux/files/usr"
 ROOT="$PREFIX/glibc"
 WORK="$HOME/.boxwine"
 TMP="$WORK/tmp"
-LOG="$WORK/install.log"
 BIN="$PREFIX/bin/boxwine"
 
 mkdir -p "$WORK" "$TMP"
-exec > >(tee -a "$LOG") 2>&1
 
 line() { printf "\033[1;36m══════════════════════════════════════════════════════\033[0m\n"; }
 title() {
@@ -23,22 +21,23 @@ ok()   { printf "\033[1;32m✔ %s\033[0m\n" "$1"; }
 warn() { printf "\033[1;33m➜ %s\033[0m\n" "$1"; }
 fail() { printf "\033[1;31m✖ %s\033[0m\n" "$1"; exit 1; }
 
-download_tar() {
-curl -L --fail --progress-bar -o "$2" "$1"
-[ -f "$2" ] || fail "Download failed"
+install_group() {
+GROUP_NAME="$1"
+shift
+warn "Installing $GROUP_NAME..."
+for pkg in "$@"; do
+    pkg install -y "$pkg"
+done
+ok "$GROUP_NAME installed"
 }
 
-download_xz() {
+download() {
 curl -L --fail --progress-bar -o "$2" "$1"
 [ -f "$2" ] || fail "Download failed"
 }
 
 title
 export DEBIAN_FRONTEND=noninteractive
-
-warn "Installing termux-am..."
-pkg install -y termux-am
-ok "termux-am installed"
 
 warn "Requesting storage permission..."
 termux-setup-storage
@@ -47,21 +46,9 @@ while [ ! -d "$HOME/storage/shared" ]; do
 warn "Waiting for storage permission..."
 sleep 3
 done
-ok "Storage permission granted"
+ok "Storage ready"
 
-warn "Checking RAM..."
-RAM=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
-[ "$RAM" -lt 1800 ] && fail "Minimum 2GB RAM required"
-ok "RAM: ${RAM}MB"
-
-warn "Checking disk space..."
-FREE=$(df "$PREFIX" | awk 'END {print int($4/1024)}')
-[ "$FREE" -lt 3000 ] && fail "Not enough disk space"
-ok "Free space: ${FREE}MB"
-
-line
-
-warn "Updating repositories..."
+warn "Updating system..."
 apt-get clean
 apt-get update -y
 apt-get -y --with-new-pkgs -o Dpkg::Options::="--force-confdef" upgrade
@@ -69,59 +56,44 @@ ok "System updated"
 
 line
 
-warn "Installing repositories..."
-pkg install -y x11-repo root-repo glibc-repo
-ok "Repositories installed"
+install_group "Repositories" \
+x11-repo root-repo glibc-repo
 
-warn "Installing core tools..."
-pkg install -y \
-bash bash-completion which file sed grep gawk coreutils findutils diffutils \
-util-linux procps less tree htop nano vim tmux \
+install_group "Base system" \
+bash which file coreutils findutils grep sed gawk util-linux procps less tree \
 curl wget aria2 git openssh rsync \
-zip unzip p7zip tar gzip bzip2 xz-utils \
-patch ed bc jq
-ok "Core tools installed"
+zip unzip p7zip tar gzip bzip2 xz-utils
 
-warn "Installing development stack..."
-pkg install -y \
+install_group "Development stack" \
 clang make cmake ninja pkg-config \
-binutils lld \
-autoconf automake libtool m4 \
-patchelf \
-gdb strace ltrace
-ok "Development stack installed"
+binutils lld autoconf automake libtool m4 \
+patchelf gdb strace
 
-warn "Installing libraries..."
-pkg install -y \
-openssl ca-certificates libcurl nghttp2 \
-zlib libbz2 liblzma \
+install_group "Libraries" \
+openssl ca-certificates libcurl libnghttp2 \
+zlib bzip2 xz-utils \
 libpng libjpeg-turbo libtiff libwebp \
-sqlite libffi libxml2 libxslt \
-readline ncurses ncurses-utils
-ok "Libraries installed"
+sqlite libffi libxml2 libxslt readline ncurses
 
-warn "Installing audio stack..."
-pkg install -y \
+install_group "Audio stack" \
 pulseaudio alsa-lib alsa-utils openal-soft
-ok "Audio stack installed"
 
-warn "Installing extra utilities..."
-pkg install -y \
-hashdeep tsu \
-dos2unix inetutils net-tools
-ok "Extra utilities installed"
+install_group "Minimal graphics stack" \
+mesa mesa-demos xwayland xorg-xrandr libx11 libxext libxrender
+
+install_group "Extra tools" \
+hashdeep tsu dos2unix inetutils net-tools dialog
 
 line
-
 sleep 2
 clear
 title
 
-warn "Checking glibc environment..."
+warn "Checking glibc..."
 if [ -d "$ROOT" ]; then
 ok "glibc directory detected"
 else
-warn "glibc not installed"
+warn "glibc not installed yet"
 fi
 
 sleep 2
@@ -143,7 +115,7 @@ fi
 title
 warn "Downloading rootfs..."
 ROOTFS_FILE="$TMP/rootfs.tar"
-download_tar "$ROOTFS_URL" "$ROOTFS_FILE"
+download "$ROOTFS_URL" "$ROOTFS_FILE"
 ok "Rootfs downloaded"
 
 warn "Installing rootfs..."
@@ -171,7 +143,7 @@ fi
 title
 warn "Downloading Wine..."
 WINE_FILE="$TMP/wine.tar.xz"
-download_xz "$URL" "$WINE_FILE"
+download "$URL" "$WINE_FILE"
 ok "Wine downloaded"
 
 warn "Installing Wine..."
