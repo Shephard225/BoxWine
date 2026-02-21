@@ -1,5 +1,5 @@
 #!/data/data/com.termux/files/usr/bin/bash
-set -e
+set -euo pipefail
 
 PREFIX="/data/data/com.termux/files/usr"
 ROOT="$PREFIX/glibc"
@@ -19,70 +19,55 @@ printf "\033[1;36m                BOXWINE INSTALLER                \033[0m\n"
 line
 printf "\n"
 }
-ok() { printf "\033[1;32m✔ %s\033[0m\n" "$1"; }
+ok()   { printf "\033[1;32m✔ %s\033[0m\n" "$1"; }
 warn() { printf "\033[1;33m➜ %s\033[0m\n" "$1"; }
 fail() { printf "\033[1;31m✖ %s\033[0m\n" "$1"; exit 1; }
 
-download_safe_tar() {
-URL="$1"
-OUT="$2"
-for i in 1 2 3; do
-  curl -L --fail -A "Mozilla/5.0" --progress-bar -o "$OUT" "$URL" && break
-  sleep 2
-done
-[ -f "$OUT" ] || fail "Download failed"
-SIZE=$(stat -c%s "$OUT")
-[ "$SIZE" -lt 10000000 ] && fail "Downloaded file too small"
-file "$OUT" | grep -qi "tar archive" || fail "Downloaded file is not tar archive"
+download_tar() {
+curl -L --fail --progress-bar -o "$2" "$1"
+[ -f "$2" ] || fail "Download failed"
 }
 
-download_safe_xz() {
-URL="$1"
-OUT="$2"
-for i in 1 2 3; do
-  curl -L --fail -A "Mozilla/5.0" --progress-bar -o "$OUT" "$URL" && break
-  sleep 2
-done
-[ -f "$OUT" ] || fail "Download failed"
-SIZE=$(stat -c%s "$OUT")
-[ "$SIZE" -lt 10000000 ] && fail "Downloaded file too small"
-file "$OUT" | grep -qi "xz" || fail "Downloaded file is not xz archive"
+download_xz() {
+curl -L --fail --progress-bar -o "$2" "$1"
+[ -f "$2" ] || fail "Download failed"
 }
 
 title
+export DEBIAN_FRONTEND=noninteractive
 
 warn "Preparing storage..."
 termux-setup-storage > /dev/null 2>&1 || true
 ok "Storage ready"
 
 warn "Checking internet..."
-curl -Is https://github.com | head -n 1 > /dev/null
+curl -Is https://github.com | head -n 1 > /dev/null || fail "No internet"
 ok "Internet OK"
 
 warn "Checking RAM..."
 RAM=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
-[ "$RAM" -lt 1800 ] && fail "Minimum 2GB RAM required ($RAM MB detected)"
+[ "$RAM" -lt 1800 ] && fail "Minimum 2GB RAM required"
 ok "RAM: ${RAM}MB"
 
 warn "Checking disk space..."
-FREE=$(df "$PREFIX" | tail -1 | awk '{print int($4/1024)}')
-[ "$FREE" -lt 3000 ] && fail "Not enough space (${FREE}MB free)"
+FREE=$(df "$PREFIX" | awk 'END {print int($4/1024)}')
+[ "$FREE" -lt 3000 ] && fail "Not enough disk space"
 ok "Free space: ${FREE}MB"
 
 line
 
-export DEBIAN_FRONTEND=noninteractive
+warn "Updating repositories..."
+pkg update -y
+ok "Repositories updated"
 
-warn "Updating system..."
-pkg update -y > /dev/null 2>&1
-pkg upgrade -y > /dev/null 2>&1
-ok "System updated"
+warn "Upgrading system..."
+pkg upgrade -y
+ok "System upgraded"
 
 line
 
 warn "Installing base tools..."
-pkg install -y \
-curl wget tar dialog xz-utils unzip proot file \
+pkg install -y curl wget tar dialog xz-utils unzip proot file \
 > /dev/null 2>&1
 ok "Base tools installed"
 
@@ -96,14 +81,12 @@ fontconfig freetype \
 ok "Graphics stack installed"
 
 warn "Installing audio stack..."
-pkg install -y \
-pulseaudio alsa-lib \
+pkg install -y pulseaudio alsa-lib \
 > /dev/null 2>&1
 ok "Audio stack installed"
 
 warn "Installing additional utilities..."
-pkg install -y \
-glibc-repo ncurses git \
+pkg install -y glibc-repo ncurses git \
 > /dev/null 2>&1
 ok "Additional utilities installed"
 
@@ -125,7 +108,7 @@ fi
 title
 warn "Downloading rootfs..."
 ROOTFS_FILE="$TMP/rootfs.tar"
-download_safe_tar "$ROOTFS_URL" "$ROOTFS_FILE"
+download_tar "$ROOTFS_URL" "$ROOTFS_FILE"
 ok "Rootfs downloaded"
 
 warn "Installing rootfs..."
@@ -153,7 +136,7 @@ fi
 title
 warn "Downloading Wine..."
 WINE_FILE="$TMP/wine.tar.xz"
-download_safe_xz "$URL" "$WINE_FILE"
+download_xz "$URL" "$WINE_FILE"
 ok "Wine downloaded"
 
 warn "Installing Wine..."
