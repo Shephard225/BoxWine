@@ -54,7 +54,7 @@ ok "System updated"
 line
 
 warn "Installing required packages..."
-pkg install -y curl wget tar dialog xz unzip proot
+pkg install -y curl wget tar dialog xz-utils unzip proot
 ok "Packages installed"
 
 line
