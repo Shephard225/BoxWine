@@ -79,7 +79,7 @@ ok "System updated"
 line
 
 warn "Installing required packages..."
-pkg install -y curl wget tar dialog xz-utils unzip proot file
+pkg install -y curl wget tar dialog xz-utils unzip proot file box64
 ok "Packages installed"
 
 line
@@ -138,12 +138,12 @@ ok "Wine installed"
 
 fi
 
+
 warn "Creating launcher..."
-cat > "$BIN" <<EOF
+cat > "$BIN" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
-export BOXWINE_ROOT="$ROOT"
-export PATH="\$BOXWINE_ROOT/bin:\$BOXWINE_ROOT/usr/bin:\$PATH"
-exec "\$BOXWINE_ROOT/bin/boxwine" "\$@"
+ROOT="/data/data/com.termux/files/usr/glibc"
+exec box64 "$ROOT/bin/wine" "$@"
 EOF
 
 chmod +x "$BIN"
