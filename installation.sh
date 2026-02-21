@@ -40,10 +40,6 @@ warn "Preparing storage..."
 termux-setup-storage > /dev/null 2>&1 || true
 ok "Storage ready"
 
-warn "Checking internet..."
-curl -Is https://github.com | head -n 1 > /dev/null || fail "No internet"
-ok "Internet OK"
-
 warn "Checking RAM..."
 RAM=$(awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo)
 [ "$RAM" -lt 1800 ] && fail "Minimum 2GB RAM required"
