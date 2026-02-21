@@ -23,7 +23,20 @@ ok() { printf "\033[1;32m✔ %s\033[0m\n" "$1"; }
 warn() { printf "\033[1;33m➜ %s\033[0m\n" "$1"; }
 fail() { printf "\033[1;31m✖ %s\033[0m\n" "$1"; exit 1; }
 
-download_safe() {
+download_safe_tar() {
+URL="$1"
+OUT="$2"
+for i in 1 2 3; do
+  curl -L --fail -A "Mozilla/5.0" --progress-bar -o "$OUT" "$URL" && break
+  sleep 2
+done
+[ -f "$OUT" ] || fail "Download failed"
+SIZE=$(stat -c%s "$OUT")
+[ "$SIZE" -lt 10000000 ] && fail "Downloaded file too small"
+file "$OUT" | grep -qi "tar archive" || fail "Downloaded file is not tar archive"
+}
+
+download_safe_xz() {
 URL="$1"
 OUT="$2"
 for i in 1 2 3; do
@@ -79,21 +92,21 @@ P=$(cat "$TMP/prefix")
 rm -f "$TMP/prefix"
 
 if [ "$P" = "1" ]; then
-ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-glibc-boxwine.tar.xz"
+ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-glibc-boxwine.tar"
 else
-ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-ajay-boxwine.tar.xz"
+ROOTFS_URL="https://github.com/Shephard225/BoxWine/releases/download/emu-files/rootfs-ajay-boxwine.tar"
 fi
 
 title
 warn "Downloading rootfs..."
-ROOTFS_FILE="$TMP/rootfs.tar.xz"
-download_safe "$ROOTFS_URL" "$ROOTFS_FILE"
+ROOTFS_FILE="$TMP/rootfs.tar"
+download_safe_tar "$ROOTFS_URL" "$ROOTFS_FILE"
 ok "Rootfs downloaded"
 
 warn "Installing rootfs..."
 rm -rf "$ROOT"
 mkdir -p "$ROOT"
-tar -xJf "$ROOTFS_FILE" -C "$ROOT"
+tar -xf "$ROOTFS_FILE" -C "$ROOT"
 rm -f "$ROOTFS_FILE"
 ok "Rootfs installed"
 
@@ -115,7 +128,7 @@ fi
 title
 warn "Downloading Wine..."
 WINE_FILE="$TMP/wine.tar.xz"
-download_safe "$URL" "$WINE_FILE"
+download_safe_xz "$URL" "$WINE_FILE"
 ok "Wine downloaded"
 
 warn "Installing Wine..."
