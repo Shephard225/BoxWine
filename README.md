@@ -193,7 +193,7 @@ Feedback, testing, and contributions are welcome.
 
 [Wine](https://github.com/Kron4ek/Wine-builds)
 
-[Turnip-driver](https://github.com/K11MCH1/AdrenoToolsDriver)
+[Turnip-driver](https://github.com/K11MCH1/AdrenoToolsDrivers)
 
 [Mesa](https://docs.mesa3d.org/license.html)
 
