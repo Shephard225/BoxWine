@@ -113,16 +113,16 @@ ok "Rootfs installed"
 if [ "$P" = "1" ]; then
 
 dialog --clear --menu "Select Wine Version" 15 60 2 \
-1 "Wine 10.19 Staging WOW64" \
-2 "Wine 10.19 Staging" 2> "$TMP/wine" || exit 1
+1 "Wine 10.20 Staging WOW64" \
+2 "Wine 10.20 Staging" 2> "$TMP/wine" || exit 1
 
 W=$(cat "$TMP/wine")
 rm -f "$TMP/wine"
 
 if [ "$W" = "1" ]; then
-URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-amd64-wow64.tar.xz"
+URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.20-staging-amd64-wow64.tar.xz"
 else
-URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.19-staging-amd64.tar.xz"
+URL="https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.20-staging-amd64.tar.xz"
 fi
 
 title
