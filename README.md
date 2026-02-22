@@ -12,7 +12,7 @@
 <a href="README-ar.md">🇸🇦 العربية</a> |
 <a href="README-id.md">🇮🇩 Bahasa Indonesia</a> |
 <a href="README-hi.md">🇮🇳 हिन्दी</a>
-<a href="README-pl.md">pl Polska
+<a href="README-pl.md">🇵🇱 Polska
 </p>
 
 ---
