@@ -121,11 +121,15 @@ ok "Rootfs downloaded"
 warn "Installing rootfs..."
 rm -rf "$ROOT"
 mkdir -p "$ROOT"
-tar -xf "$ROOTFS_FILE" -C "$ROOT"
-rm -f "$ROOTFS_FILE"
-ok "Rootfs installed"
 
-if [ "$P" = "1" ]; then
+trap 'rm -f "$ROOTFS_FILE"' EXIT
+
+tar -xf "$ROOTFS_FILE" -C "$ROOT"
+
+rm -f "$ROOTFS_FILE"
+trap - EXIT
+
+ok "Rootfs installed"
 
 dialog --clear --menu "Select Wine Version" 15 60 2 \
 1 "Wine 9.3 Vanilla WOW64" \
