@@ -154,10 +154,21 @@ ok "Wine installed"
 fi
 
 warn "Creating launcher..."
-cat > "$BIN" << 'EOF'
+
+cat > "$BIN" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
+
 ROOT="/data/data/com.termux/files/usr/glibc"
-exec "$ROOT/bin/wine" "$@"
+
+export BOX64_DYNAREC=1
+export BOX64_DYNAREC_BIGBLOCK=1
+export BOX64_MAXCPU=8
+
+if [ -x "\$ROOT/bin/box64" ]; then
+    exec "\$ROOT/bin/box64" "\$ROOT/bin/wine" "\$@"
+else
+    exec "\$ROOT/bin/wine" "\$@"
+fi
 EOF
 
 chmod +x "$BIN"
