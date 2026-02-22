@@ -158,22 +158,17 @@ warn "Creating launcher..."
 cat > "$BIN" << EOF
 #!/data/data/com.termux/files/usr/bin/bash
 
-ROOT="/data/data/com.termux/files/usr/glibc"
+PREFIX="/data/data/com.termux/files/usr"
+ROOT="\$PREFIX/glibc"
 
+export BOX64_PATH="\$ROOT/bin"
+export BOX64_LD_LIBRARY_PATH="\$ROOT/lib:\$ROOT/lib64"
 export BOX64_DYNAREC=1
 export BOX64_DYNAREC_BIGBLOCK=1
 export BOX64_MAXCPU=8
 
-if [ -x "\$ROOT/bin/box64" ]; then
-    exec "\$ROOT/bin/box64" "\$ROOT/bin/wine" "\$@"
-else
-    exec "\$ROOT/bin/wine" "\$@"
-fi
+exec "\$ROOT/bin/box64" "\$ROOT/bin/wine" "\$@"
 EOF
 
 chmod +x "$BIN"
 ok "Launcher created"
-
-line
-printf "\033[1;32mBOXWINE INSTALLED SUCCESSFULLY\033[0m\n\n"
-printf "\033[1;33mRun with:\033[0m boxwine\n\n"
