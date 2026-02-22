@@ -135,9 +135,9 @@ W=$(cat "$TMP/wine")
 rm -f "$TMP/wine"
 
 if [ "$W" = "1" ]; then
-URL="https://github.com/Shephard225/Wine/releases/download/emu-wine/wine-9.3-vanilla-wow64.tar.xz"
+URL="https://github.com/Shephard225/BoxWine/releases/download/emu-wine/wine-9.3-vanilla-wow64.tar.xz"
 else
-URL="https://github.com/Shephard225/Wine/releases/download/emu-wine/wine-ge-custom-8-25.tar.xz"
+URL="https://github.com/Shephard225/BoxWine/releases/download/emu-wine/wine-ge-custom-8-25.tar.xz"
 fi
 
 title
