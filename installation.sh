@@ -156,21 +156,23 @@ rm -f "$WINE_FILE"
 
 ok "Wine installed"
 
+
 warn "Creating launcher..."
 
-cat > "$BIN" << EOF
+cat > "$BIN" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
 
 PREFIX="/data/data/com.termux/files/usr"
-ROOT="\$PREFIX/glibc"
+SCRIPT="$PREFIX/glibc/scripts/boxwine"
 
-export BOX64_PATH="\$ROOT/bin"
-export BOX64_LD_LIBRARY_PATH="\$ROOT/lib:\$ROOT/lib64"
-export BOX64_DYNAREC=1
-export BOX64_DYNAREC_BIGBLOCK=1
-export BOX64_MAXCPU=8
+if [ ! -f "$SCRIPT" ]; then
+    echo -e "\033[1;31mError: $SCRIPT not found!\033[0m"
+    exit 1
+fi
 
-exec "\$ROOT/bin/box64" "\$ROOT/bin/wine" "\$@"
+echo -e "\033[1;32mTo run emulator, type: boxwine\033[0m"
+
+exec "$SCRIPT" "$@"
 EOF
 
 chmod +x "$BIN"
