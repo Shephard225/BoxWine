@@ -153,9 +153,8 @@ ok "Wine downloaded"
 warn "Installing Wine..."
 tar -xJf "$WINE_FILE" -C "$ROOT" --strip-components=1
 rm -f "$WINE_FILE"
-ok "Wine installed"
 
-fi
+ok "Wine installed"
 
 warn "Creating launcher..."
 
