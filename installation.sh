@@ -160,7 +160,6 @@ ok "Wine installed"
 warn "Creating launcher..."
 
 cat > "$BIN" << 'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
 
 PREFIX="/data/data/com.termux/files/usr"
 SCRIPT="$PREFIX/glibc/opt/scripts/boxwine"
@@ -170,10 +169,14 @@ if [ ! -f "$SCRIPT" ]; then
     exit 1
 fi
 
-echo -e "\033[1;32mTo run emulator, type: boxwine\033[0m"
-
 exec "$SCRIPT" "$@"
 EOF
 
 chmod +x "$BIN"
+
+ln -sf $PREFIX/glibc/scripts/boxwine $PREFIX/bin/boxwine
+echo -e "\033[1;36m══════════════════════════════════════════\033[0m"
+echo -e "\033[1;32mTo start the emulator, type: boxwine\033[0m"
+echo -e "\033[1;36m══════════════════════════════════════════\033[0m"
+
 ok "Launcher created"
