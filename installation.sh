@@ -163,7 +163,7 @@ cat > "$BIN" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
 
 PREFIX="/data/data/com.termux/files/usr"
-SCRIPT="$PREFIX/glibc/scripts/boxwine"
+SCRIPT="$PREFIX/glibc/opt/scripts/boxwine"
 
 if [ ! -f "$SCRIPT" ]; then
     echo -e "\033[1;31mError: $SCRIPT not found!\033[0m"
